@@ -92,6 +92,25 @@ def nuc_or(dna1, dna2):
             result += '0'
     return binary_to_nuc(result)
 
+def sum0(alpha):
+    return r_rotate(alpha, 28) ^ r_rotate(alpha, 34) ^ r_rotate(alpha, 39)
+
+def sum1(alpha):
+    return r_rotate(alpha, 14) ^ r_rotate(alpha, 18) ^ r_rotate(alpha, 41)
+
+# input: one 512-nucleotide block M(i)
+# output: Wj DNA sequence of 32 nucleotides
+def compute_Wj(Mi, j):
+    if 0 <= j <= 15:
+        return Mi[32*j:32*(j+1)]
+    else:
+        W15 = compute_Wj(Mi, j - 15)
+        W2 = compute_Wj(Mi, j - 2)
+        sigma0 = r_rotate(W15, 1) ^ r_rotate(W15, 8) ^ r_shift(W15, 7)
+        sigma1 = r_rotate(W2, 19) ^ r_rotate(W2, 61) ^ r_shift(W2, 6)
+        Wj = sigma0 ^ compute_Wj(Mi, j - 7) ^ sigma1 ^ compute_Wj(Mi, j - 16)
+        return Wj
+
 
 # dna to binary
 def nuc_to_binary(dna):
