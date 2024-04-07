@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Nucleotide(Enum):
     A = 0b00
     C = 0b01
@@ -20,6 +21,9 @@ class Nucleotide(Enum):
 
     def __repr__(self):
         return self.name
+
+    def __add__(self, other):
+        return Nucleotide((self.value + other.value) % 4), Nucleotide(int((self.value + other.value) / 4))
 
     @classmethod
     def from_letter(cls, letter):

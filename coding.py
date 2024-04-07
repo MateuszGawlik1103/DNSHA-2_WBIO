@@ -1,5 +1,6 @@
 from nucleotide import Nucleotide
 
+
 def string_to_bits(input_string):
     result_bits = []
     for char in input_string:
@@ -17,19 +18,18 @@ print(result)
 def bits_to_string(bit_sequence):
     result_string = ""
     for i in range(0, len(bit_sequence), 8):
-        bits = bit_sequence[i:i+8]
+        bits = bit_sequence[i:i + 8]
         ascii_code = int("".join(map(str, bits)), 2)
         result_string += chr(ascii_code)
     return result_string
 
 
-bit_sequence = string_to_bits("BOB") 
+bit_sequence = string_to_bits("BOB")
 result = bits_to_string(bit_sequence)
 print(result)
 
 
-
-#input text; output - list of nucleotides
+# input text; output - list of nucleotides
 def dna_encoding(text):
     dna_sequence: list[Nucleotide] = list()
     for char in text:
@@ -38,17 +38,17 @@ def dna_encoding(text):
             dna_sequence.append(Nucleotide(two_bits))
     return dna_sequence
 
+
 print(str(dna_encoding("BOB")))
 
-#input - DNA artificial sequence; output - list of bits
+
+# input - DNA artificial sequence; output - list of bits
 def dna_decoding(alfa):
     res = []
     for letter in alfa:
         binary_nuc = bin(Nucleotide.from_letter(letter).value)[2:].zfill(2)
-        res.extend(map(int,binary_nuc))
+        res.extend(map(int, binary_nuc))
     return res
+
+
 print(dna_decoding("GCT"))
-
-
-
-
