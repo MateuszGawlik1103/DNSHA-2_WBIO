@@ -1,4 +1,5 @@
 from nucleotide import Nucleotide
+from dna_operations import nucleotide_addition
 
 rsob_table = {
     ('A', 'A'): Nucleotide.A,
@@ -25,7 +26,7 @@ def rsob_nuc(nucl1, nucl2):
     return res
 
 
-print(rsob_nuc([Nucleotide.A, Nucleotide.A], [Nucleotide.C, Nucleotide.G]))
+#print(rsob_nuc([Nucleotide.A, Nucleotide.A], [Nucleotide.C, Nucleotide.G]))
 
 
 # input artificial DNA (list); output - one bit right shift DNA (list)
@@ -39,7 +40,7 @@ def rsob(dna):
     return rsob_nuc(B4, B5)
 
 
-print(rsob([Nucleotide.T, Nucleotide.A, Nucleotide.C]))
+#print(rsob([Nucleotide.T, Nucleotide.A, Nucleotide.C]))
 
 
 # input: dna - string of nucleotides, k - rotation (in bits)
@@ -51,7 +52,7 @@ def r_shift(dna, k):
         return rsob(alfa)
 
 
-print(r_shift([Nucleotide.G, Nucleotide.C, Nucleotide.T, Nucleotide.G, Nucleotide.A, Nucleotide.T], 3))
+#print(r_shift([Nucleotide.G, Nucleotide.C, Nucleotide.T, Nucleotide.G, Nucleotide.A, Nucleotide.T], 3))
 
 
 # left shift:
@@ -125,7 +126,10 @@ def compute_wj(mi, j):
         w2 = compute_wj(mi, j - 2)
         sigma0 = nuc_list_xor(r_rotate(w15, 1), r_rotate(w15, 8), r_shift(w15, 7))
         sigma1 = nuc_list_xor(r_rotate(w2, 19), r_rotate(w2, 61), r_shift(w2, 6))
-        wj = nuc_list_xor(sigma0, compute_wj(mi, j - 7), sigma1, compute_wj(mi, j - 16))
+        wj = sigma0
+        temp = [compute_wj(mi, j - 7), sigma1, compute_wj(mi, j - 16)]
+        for t in temp:
+            wj = nucleotide_addition(wj, t)
         return wj
 
 # dna to binary
@@ -152,7 +156,6 @@ def binary_to_nuc(binary_sequence):
             raise ValueError("invalid binary representation")
         nucleotide_sequence.append(binary_to_nucleotide[nucleotide_binary])
     return nucleotide_sequence
-
 
 print("right shift check: (should be AATA)")
 print(r_shift([Nucleotide.T, Nucleotide.A, Nucleotide.G, Nucleotide.C], 4))

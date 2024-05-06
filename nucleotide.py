@@ -25,6 +25,9 @@ class Nucleotide(Enum):
     def __add__(self, other):
         return Nucleotide((self.value + other.value) % 4), Nucleotide(int((self.value + other.value) / 4))
 
+    def __str__(self):
+        return self.name
+
     @classmethod
     def from_letter(cls, letter):
         letter = letter.upper()
