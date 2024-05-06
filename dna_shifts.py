@@ -45,14 +45,16 @@ def rsob(dna):
 
 # input: dna - string of nucleotides, k - rotation (in bits)
 def r_shift(dna, k):
-    if k % 2 == 0:
+    if k == 1:
+        return rsob(dna)
+    elif k % 2 == 0:
         return [Nucleotide.A] * int(k / 2) + dna[:-int(k / 2)]
     else:
         alfa = [Nucleotide.A] * int((k - 1) / 2) + dna[:-int((k - 1) / 2)]
         return rsob(alfa)
 
-
-#print(r_shift([Nucleotide.G, Nucleotide.C, Nucleotide.T, Nucleotide.G, Nucleotide.A, Nucleotide.T], 3))
+    
+#print(r_shift([Nucleotide.G, Nucleotide.C, Nucleotide.T, Nucleotide.G, Nucleotide.A, Nucleotide.T], 1))
 
 
 # left shift:
@@ -168,3 +170,5 @@ print(r_rotate([Nucleotide.A, Nucleotide.G, Nucleotide.T], 4))
 
 print("right rotate check 2: not even k (should be TAA)")
 print(r_rotate([Nucleotide.A, Nucleotide.C, Nucleotide.G], 3))
+
+
