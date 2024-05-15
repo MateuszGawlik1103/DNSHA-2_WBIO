@@ -7,6 +7,15 @@ class Nucleotide(Enum):
     G = 0b10
     T = 0b11
 
+    @property
+    def _nucleotide_operation_table(self):
+        return {
+            ('A', 'A'): 0b00,
+            ('A', 'C'): 0b10,
+            ('A', 'G'): 0b01,
+            ('G', 'C'): 0b11,
+        }
+
     def __invert__(self):
         return Nucleotide(~self.value & 0b11)
 
@@ -28,6 +37,17 @@ class Nucleotide(Enum):
     def __str__(self):
         return self.name
 
+    def nucleotide_operation(self, other):
+        key1 = (self.name, other.name)
+        key2 = (other.name, self.name)
+
+        if key1 in self._nucleotide_operation_table:
+            return Nucleotide(self._nucleotide_operation_table[key1])
+        elif key2 in self._nucleotide_operation_table:
+            return Nucleotide(self._nucleotide_operation_table[key2])
+        else:
+            return None
+
     @classmethod
     def from_letter(cls, letter):
         letter = letter.upper()
@@ -41,3 +61,4 @@ class Nucleotide(Enum):
             return cls.T
         else:
             raise ValueError("Invalid nucleotide letter: {}".format(letter))
+
