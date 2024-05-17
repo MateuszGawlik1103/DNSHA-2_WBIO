@@ -1,6 +1,6 @@
-from data_conversion import nucleotide_list_from_nucleotide_string
+from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list
 from nucleotide import Nucleotide
-import random
+from functools import cache
 
 k_values = [
     "CAAGGAGGAGTTGCGATCCTAGGAGGTGAGAG", "CTACATCTCACAGCACAGATTGTTCGCCTATC", "GTCCTAAATTGTTATTTGTACATCATGTAGTT",
@@ -32,6 +32,17 @@ k_values = [
     "CCTTTAGTCGTTGGGTATGGTCCGTTGGTGTA", "CGTACACAACGCGATACAGGCACTCCGAACCT"
 ]
 
+initial_vector_h0 = [
+    nuc_string_to_nuc_list("CGGGAAGCTGCGCGCTTTATGTTATAGCAAGA"),
+    nuc_string_to_nuc_list("GTGTCGCTGGTGGACCGACATAGGGGCTATGT"),
+    nuc_string_to_nuc_list("ATTACGTGTTATCTAGTTTGGCCATTGAAGGT"),
+    nuc_string_to_nuc_list("GGCCCATTTTCCATGGCCTTACTCATCGTTAC"),
+    nuc_string_to_nuc_list("CCACAATGCCAGCTTTGGTCTGCGGAAGTCAC"),
+    nuc_string_to_nuc_list("GCGTAACCCGGAGATAAGGTATTGCGTAACTT"),
+    nuc_string_to_nuc_list("ACTTGAATTCGCGGGTTTGTCAACGTTCCGGT"),
+    nuc_string_to_nuc_list("CCGTTGAATATCACGCACATCTTGAGACCTGC")
+]
+
 
 # input artificial DNA (list); output - one bit right shift DNA (list)
 def rsob(dna):
@@ -49,19 +60,10 @@ def r_shift(dna, k):
     if k == 1:
         return rsob(dna)
     elif k % 2 == 0:
-        return [Nucleotide.A] * int(k / 2) + dna[:-int(k / 2)]
+        return [Nucleotide.A] * (k // 2) + dna[:-(k // 2)]
     else:
-        alfa = [Nucleotide.A] * int((k - 1) / 2) + dna[:-int((k - 1) / 2)]
+        alfa = [Nucleotide.A] * ((k - 1) // 2) + dna[:-((k - 1) // 2)]
         return rsob(alfa)
-
-
-# left shift:
-def l_shift(dna, k):
-    if k % 2 == 0:
-        return dna[int(k / 2):] + [Nucleotide.A] * int(k / 2)
-    else:
-        alfa = dna[int((k - 1) / 2):] + [Nucleotide.A] * int((k - 1) / 2)
-        return lsob(alfa)
 
 
 def lsob(dna):
@@ -74,19 +76,28 @@ def lsob(dna):
     return [x.nucleotide_operation(y) for x, y in zip(b4, b5)]
 
 
+# left shift:
+def l_shift(dna, k):
+    if k % 2 == 0:
+        return dna[(k // 2):] + [Nucleotide.A] * (k // 2)
+    else:
+        alfa = dna[int((k - 1) // 2):] + [Nucleotide.A] * ((k - 1) // 2)
+        return lsob(alfa)
+
+
 # right rotation
 def r_rotate(dna, k):
     m = len(dna)
-    B1 = r_shift(dna, k)
-    B2 = l_shift(dna, (2 * m) - k)
-    return [x | y for x, y in zip(B1, B2)]
+    b1 = r_shift(dna, k)
+    b2 = l_shift(dna, (2 * m) - k)
+    return [x | y for x, y in zip(b1, b2)]
 
 
-def nuc_list_xor(*dnas):
+def nuc_lists_xor(*dnas):
     length = len(dnas[0])
-    for dna in dnas[1:]:
-        if len(dna) != length:
-            raise ValueError("All DNA sequences must have the same length")
+    # for dna in dnas[1:]:
+    #     if len(dna) != length:
+    #         raise ValueError("All DNA sequences must have the same length")
     result = []
     for i in range(length):
         xor_result = dnas[0][i]
@@ -97,40 +108,11 @@ def nuc_list_xor(*dnas):
 
 
 def sum0(alpha):
-    return nuc_list_xor(r_rotate(alpha, 28), r_rotate(alpha, 34), r_rotate(alpha, 39))
+    return nuc_lists_xor(r_rotate(alpha, 28), r_rotate(alpha, 34), r_rotate(alpha, 39))
 
 
 def sum1(alpha):
-    return nuc_list_xor(r_rotate(alpha, 14), r_rotate(alpha, 18), r_rotate(alpha, 41))
-
-
-# input: one 512-nucleotide block M(i)
-# output: Wj DNA sequence of 32 nucleotides
-def compute_wj(mi, j):
-    if 0 <= j <= 15:
-        return mi[32 * j:32 * (j + 1)]
-    else:
-        w15 = compute_wj(mi, j - 15)
-        w2 = compute_wj(mi, j - 2)
-        sigma0 = nuc_list_xor(r_rotate(w15, 1), r_rotate(w15, 8), r_shift(w15, 7))
-        sigma1 = nuc_list_xor(r_rotate(w2, 19), r_rotate(w2, 61), r_shift(w2, 6))
-        wj = sigma0
-        temp = [compute_wj(mi, j - 7), sigma1, compute_wj(mi, j - 16)]
-        for t in temp:
-            wj = nucleotide_addition(wj, t)
-        return wj
-
-
-initial_vector_h0 = [
-    nucleotide_list_from_nucleotide_string("CGGGAAGCTGCGCGCTTTATGTTATAGCAAGA"),
-    nucleotide_list_from_nucleotide_string("GTGTCGCTGGTGGACCGACATAGGGGCTATGT"),
-    nucleotide_list_from_nucleotide_string("ATTACGTGTTATCTAGTTTGGCCATTGAAGGT"),
-    nucleotide_list_from_nucleotide_string("GGCCCATTTTCCATGGCCTTACTCATCGTTAC"),
-    nucleotide_list_from_nucleotide_string("CCACAATGCCAGCTTTGGTCTGCGGAAGTCAC"),
-    nucleotide_list_from_nucleotide_string("GCGTAACCCGGAGATAAGGTATTGCGTAACTT"),
-    nucleotide_list_from_nucleotide_string("ACTTGAATTCGCGGGTTTGTCAACGTTCCGGT"),
-    nucleotide_list_from_nucleotide_string("CCGTTGAATATCACGCACATCTTGAGACCTGC")
-]
+    return nuc_lists_xor(r_rotate(alpha, 14), r_rotate(alpha, 18), r_rotate(alpha, 41))
 
 
 def dnach(r1: list[Nucleotide], r2: list[Nucleotide], r3: list[Nucleotide]):
@@ -162,6 +144,25 @@ def nucleotide_addition(word1: list[Nucleotide], word2: list[Nucleotide]):
     return result
 
 
+# input: one 512-nucleotide block M(i)
+# output: Wj DNA sequence of 32 nucleotides
+@cache
+def compute_wj(mi, j):
+    if 0 <= j <= 15:
+        return tuple(list(mi)[32 * j:32 * (j + 1)])
+    else:
+        w15 = list(compute_wj(mi, j - 15))
+        w2 = list(compute_wj(mi, j - 2))
+        sigma0 = nuc_lists_xor(r_rotate(w15, 1), r_rotate(w15, 8), r_shift(w15, 7))
+        sigma1 = nuc_lists_xor(r_rotate(w2, 19), r_rotate(w2, 61), r_shift(w2, 6))
+        wj = sigma0
+        temp = [list(compute_wj(mi, j - 7)), sigma1, list(compute_wj(mi, j - 16))]
+        for t in temp:
+            wj = nucleotide_addition(wj, t)
+
+        return tuple(wj)
+
+
 def sha512_hash(blocks):
     hi = initial_vector_h0
 
@@ -169,15 +170,15 @@ def sha512_hash(blocks):
         r1, r2, r3, r4, r5, r6, r7, r8 = hi
 
         for j in range(80):
-            k = nucleotide_list_from_nucleotide_string(k_values[j])
+            print(j)
+            k = nuc_string_to_nuc_list(k_values[j])
             t1 = r8
-            temp = [sum1(r5), dnach(r5, r6, r7), k, compute_wj(block, j)]
+            temp = [sum1(r5), dnach(r5, r6, r7), k, list(compute_wj(tuple(block), j))]
             for t in temp:
                 t1 = nucleotide_addition(t1, t)
             t2 = nucleotide_addition(sum0(r1), dnamaj(r1, r2, r3))
             r8, r7, r6, r5, r4, r3, r2, r1 = r7, r6, r5, nucleotide_addition(r4, t1), r3, r2, r1, nucleotide_addition(
                 t1, t2)
-
         hi = [
             nucleotide_addition(r1, hi[0]), nucleotide_addition(r2, hi[1]),
             nucleotide_addition(r3, hi[2]), nucleotide_addition(r4, hi[3]),
@@ -188,10 +189,8 @@ def sha512_hash(blocks):
     return hi
 
 
-nucleotides = ['A', 'C', 'T', 'G']
-random_sequence = ''.join(random.choice(nucleotides) for _ in range(512))
-print(random_sequence)
-test_vector = [nucleotide_list_from_nucleotide_string(random_sequence)]
+nuc_list = [add_padding(text_to_nuc_list("BOB"))]
+print(nuc_list)
 
-result = sha512_hash(test_vector)
-print(result)
+dna_hash = sha512_hash(nuc_list)
+print(dna_hash)
