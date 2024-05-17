@@ -1,6 +1,7 @@
 from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list
 from nucleotide import Nucleotide
 from functools import cache
+from hashlib import sha512
 
 k_values = [
     "CAAGGAGGAGTTGCGATCCTAGGAGGTGAGAG", "CTACATCTCACAGCACAGATTGTTCGCCTATC", "GTCCTAAATTGTTATTTGTACATCATGTAGTT",
@@ -87,9 +88,9 @@ def l_shift(dna, k):
 
 # right rotation
 def r_rotate(dna, k):
-    m = len(dna)
+    mm = len(dna)
     b1 = r_shift(dna, k)
-    b2 = l_shift(dna, (2 * m) - k)
+    b2 = l_shift(dna, (2 * mm) - k)
     return [x | y for x, y in zip(b1, b2)]
 
 
@@ -130,14 +131,14 @@ def dnamaj(r1: list[Nucleotide], r2: list[Nucleotide], r3: list[Nucleotide]):
 
 
 def nucleotide_addition(word1: list[Nucleotide], word2: list[Nucleotide]):
-    word1.reverse()
-    word2.reverse()
-    result = list()
-    z0, e = word1[0] + word2[0]
+    word1_copy = word1[::-1]
+    word2_copy = word2[::-1]
+    result = []
+    z0, e = word1_copy[0] + word2_copy[0]
     result.append(z0)
     for i in range(1, 32):
-        x, ex = word1[i] + e
-        zi, ey = x + word2[i]
+        x, ex = word1_copy[i] + e
+        zi, ey = x + word2_copy[i]
         e, a = ex + ey
         result.append(zi)
     result.reverse()
@@ -170,15 +171,15 @@ def sha512_hash(blocks):
         r1, r2, r3, r4, r5, r6, r7, r8 = hi
 
         for j in range(80):
-            print(j)
             k = nuc_string_to_nuc_list(k_values[j])
             t1 = r8
             temp = [sum1(r5), dnach(r5, r6, r7), k, list(compute_wj(tuple(block), j))]
             for t in temp:
                 t1 = nucleotide_addition(t1, t)
             t2 = nucleotide_addition(sum0(r1), dnamaj(r1, r2, r3))
-            r8, r7, r6, r5, r4, r3, r2, r1 = r7, r6, r5, nucleotide_addition(r4, t1), r3, r2, r1, nucleotide_addition(
-                t1, t2)
+            r8, r7, r6, r5, r4, r3, r2 = r7, r6, r5, nucleotide_addition(r4, t1), r3, r2, r1
+            r1 = nucleotide_addition(t1, t2)
+
         hi = [
             nucleotide_addition(r1, hi[0]), nucleotide_addition(r2, hi[1]),
             nucleotide_addition(r3, hi[2]), nucleotide_addition(r4, hi[3]),
@@ -188,6 +189,10 @@ def sha512_hash(blocks):
 
     return hi
 
+
+m = sha512()
+m.update(b"BOB")
+print(m.hexdigest())
 
 nuc_list = [add_padding(text_to_nuc_list("BOB"))]
 print(nuc_list)
