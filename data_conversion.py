@@ -92,4 +92,15 @@ def add_padding(nuc_list: [Nucleotide]) -> [Nucleotide]:
     nuc_list += length_nuc_list
     return nuc_list
 
+def add_padding2(nuc_list: [Nucleotide]) -> [Nucleotide]:
+    length_string = bin(len(nuc_list) * 2)[2:]
+    length_nuc_list = binary_to_nuc_list(length_string) if len(length_string) % 2 == 0 else binary_to_nuc_list(
+        '0' + length_string)
+    nuc_list += [Nucleotide.G]
+    k = 512 - ((len(nuc_list) + 64) % 512)
+    nuc_list += [Nucleotide.A] * k
+    nuc_list += [Nucleotide.A] * (64 - len(length_nuc_list))
+    nuc_list += length_nuc_list
+    return [nuc_list[i:i + 512] for i in range(0,len(nuc_list),512)]
+
 

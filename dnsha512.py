@@ -1,4 +1,4 @@
-from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list, binary_to_nuc_list
+from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list, binary_to_nuc_list, add_padding2
 from nucleotide import Nucleotide
 from functools import cache
 from hashlib import sha512
@@ -201,7 +201,7 @@ def hash_photo(path: str):
     with open(path, 'rb') as file:
         bits = file.read()
     bit_string = ''.join(format(byte, '08b') for byte in bits)
-    return dnsha512_hash(add_padding(binary_to_nuc_list(bit_string)))
+    return dnsha512_hash(add_padding2(binary_to_nuc_list(bit_string)))
 
 
-print(hash_photo("ys.png"))
+
