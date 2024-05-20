@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNSHA-512 Hash Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>DNSHA-512 Hash Calculator</h1>
+        <form method="post">
+            <label for="input_text">Enter text:</label>
+            <input type="text" id="input_text" name="input_text" required>
+            <button type="submit">Calculate Hash</button>
+        </form>
+        {% if hash_result %}
+        <h2>Result:</h2>
+        <p>Input Text: <br> {{ input_text }}</p>
+        {% autoescape false %}
+        <p>Hash Result: <br> {{ hash_result }}</p>
+        {% endautoescape %}
+        {% endif %}
+    </div>
+</body>
+</html>
