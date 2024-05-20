@@ -1,4 +1,4 @@
-from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list
+from data_conversion import nuc_string_to_nuc_list, add_padding, text_to_nuc_list, binary_to_nuc_list
 from nucleotide import Nucleotide
 from functools import cache
 from hashlib import sha512
@@ -164,10 +164,11 @@ def compute_wj(mi, j):
         return tuple(wj)
 
 
-def sha512_hash(blocks):
+def dnsha512_hash(blocks):
     hi = initial_vector_h0
 
     for i, block in enumerate(blocks):
+        print(i)
         r1, r2, r3, r4, r5, r6, r7, r8 = hi
 
         for j in range(80):
@@ -190,12 +191,17 @@ def sha512_hash(blocks):
     return hi
 
 
-m = sha512()
-m.update(b"BOB")
-print(m.hexdigest())
+def hash_text(text: str):
+    print("text to hash " + text)
+    print("nucleotide sequence before hash " + add_padding(text_to_nuc_list(text)))
+    return dnsha512_hash(add_padding(text_to_nuc_list(text)))
 
-nuc_list = [add_padding(text_to_nuc_list("BOB"))]
-print(nuc_list)
 
-dna_hash = sha512_hash(nuc_list)
-print(dna_hash)
+def hash_photo(path: str):
+    with open(path, 'rb') as file:
+        bits = file.read()
+    bit_string = ''.join(format(byte, '08b') for byte in bits)
+    return dnsha512_hash(add_padding(binary_to_nuc_list(bit_string)))
+
+
+print(hash_photo("ys.png"))
